@@ -1,0 +1,4 @@
+interface:
+  display_name: "Calibre Library"
+  short_description: "Calibre diagnostics and metadata workflows"
+  default_prompt: "Use $calibre-library to diagnose Calibre counts and safely fix series and tag metadata."
