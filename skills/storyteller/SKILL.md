@@ -1,6 +1,6 @@
 ---
 name: storyteller
-description: Manage a local Storyteller server via API: authenticate with bearer tokens, list books, upload EPUB plus M4B with TUS, update title or series metadata, and queue or cancel alignment processing. Use when the user asks to add books, inspect library state, fix metadata, or run alignment in Storyteller.
+description: "Manage a local Storyteller server via API: authenticate with bearer tokens, list books, upload EPUB plus M4B with TUS, update title or series metadata, and queue or cancel alignment processing. Use when the user asks to add books, inspect library state, fix metadata, or run alignment in Storyteller."
 ---
 
 # Storyteller
@@ -36,6 +36,7 @@ Run bundled scripts for deterministic behavior:
 - `scripts/upload_epub_m4b.sh`
 - `scripts/update_title_series.sh`
 - `scripts/queue_alignment.sh`
+- `scripts/diagnose_alignment_error.sh`
 
 ## Core workflow
 
@@ -45,6 +46,11 @@ Run bundled scripts for deterministic behavior:
 4. Fix metadata (title, series name, series position) when needed.
 5. Queue alignment with `POST /api/v2/books/{bookId}/process`.
 6. Monitor status through `GET /api/v2/books/{bookId}` or SSE `GET /api/v2/books/events` with `Accept: text/event-stream`.
+
+## Failure diagnosis
+
+- Use `scripts/diagnose_alignment_error.sh <book_uuid>` to correlate API status with recent worker logs.
+- If stage is `TRANSCRIBE_CHAPTERS` and logs keep advancing `Transcribing audio file ...`, treat it as active processing, not a failure.
 
 ## Safety rules
 

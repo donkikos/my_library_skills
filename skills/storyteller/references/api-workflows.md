@@ -67,10 +67,25 @@ Recommended upload metadata keys:
 - Per book: `GET /api/v2/books/{bookId}`
 - SSE stream: `GET /api/v2/books/events` with `Accept: text/event-stream`
 
+## Diagnose alignment issues
+
+Use `scripts/diagnose_alignment_error.sh` to combine API book status and recent worker logs.
+
+```bash
+scripts/diagnose_alignment_error.sh <book_uuid> --compose-dir /Users/tigran/Workspace/_personal/storyteller
+```
+
+Options:
+
+- `--logs-lines N` to expand the diagnostic window.
+- `--compose-dir PATH` if not running from the Storyteller compose project.
+- `--container NAME` to read logs directly from a container (for example `storyteller-web-1`).
+
 ## Operational safety learnings
 
 - Avoid metadata edits while readaloud status is `PROCESSING` or `QUEUED`.
 - A real failure pattern is `ENOENT` for `/data/assets/<book>/transcriptions/<chunk>.json` during `TRANSCRIBE_CHAPTERS` when the book path changed mid-run.
+- If stage is `TRANSCRIBE_CHAPTERS` and logs keep advancing `Transcribing audio file ...`, processing is usually healthy even when it is slow.
 - Recovery sequence:
   1. Cancel processing (`DELETE /api/v2/books/{bookId}/process`) if still active.
   2. Apply metadata corrections.
