@@ -1,0 +1,4 @@
+interface:
+  display_name: "Storyteller API"
+  short_description: "Manage Storyteller books and alignment"
+  default_prompt: "Use $storyteller to add books, fix metadata, and queue alignment in my local Storyteller instance."
