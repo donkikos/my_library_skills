@@ -19,10 +19,10 @@ Use this skill to perform reliable Storyteller API operations on a local instanc
 Use the bundled script to avoid typing passwords in shell commands.
 
 1. Copy the Storyteller password to clipboard.
-2. Run:
+2. Run with the actual local Storyteller username or email:
 
 ```bash
-scripts/get_token_from_clipboard.sh --username-or-email agent_user --clear-clipboard
+scripts/get_token_from_clipboard.sh --username-or-email <username-or-email> --clear-clipboard
 ```
 
 This reads password from `pbpaste`, calls `POST /api/v2/token`, and stores `access_token` to `$HOME/.config/storyteller-skill/.storyteller_token`.
@@ -50,6 +50,7 @@ Run bundled scripts for deterministic behavior:
 ## Failure diagnosis
 
 - Use `scripts/diagnose_alignment_error.sh <book_uuid>` to correlate API status with recent worker logs.
+- If `GET /api/health` is healthy but `POST /api/v2/books/upload` returns `401 Unauthorized` or `{"message":"Not authenticated"}`, treat the token as stale and refresh it before debugging TUS.
 - If stage is `TRANSCRIBE_CHAPTERS` and logs keep advancing `Transcribing audio file ...`, treat it as active processing, not a failure.
 
 ## Safety rules
@@ -63,6 +64,7 @@ Run bundled scripts for deterministic behavior:
 - Token endpoint: `POST /api/v2/token` with form fields `usernameOrEmail` and `password`.
 - Auth response contains `access_token`, `expires_in`, `token_type`.
 - Protected endpoints accept `Authorization: Bearer <token>`.
+- `GET /api/health` does not validate auth; always use a protected endpoint when checking whether a token is still valid.
 - TUS upload metadata must include at least `bookUuid` and `filename`; in practice include `filetype` and `relativePath`.
 - Queue alignment endpoint supports `?restart=1` to force a fresh run.
 - `PUT /api/v2/books/{bookId}/status` and `PUT /api/v2/books/status` update reading status, not alignment processing.

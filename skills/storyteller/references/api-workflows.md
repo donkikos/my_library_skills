@@ -12,7 +12,7 @@
 Copy password to clipboard, then run:
 
 ```bash
-scripts/get_token_from_clipboard.sh --username-or-email agent_user --clear-clipboard
+scripts/get_token_from_clipboard.sh --username-or-email <username-or-email> --clear-clipboard
 ```
 
 Equivalent raw form (without exposing password in CLI args):
@@ -20,7 +20,7 @@ Equivalent raw form (without exposing password in CLI args):
 ```bash
 pbpaste | curl -sS -X POST 'http://localhost:8001/api/v2/token' \
   -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data-urlencode 'usernameOrEmail=agent_user' \
+  --data-urlencode 'usernameOrEmail=<username-or-email>' \
   --data-urlencode 'password@-' \
 | jq -r '.access_token' > "$HOME/.config/storyteller-skill/.storyteller_token"
 chmod 600 "$HOME/.config/storyteller-skill/.storyteller_token"
@@ -30,6 +30,7 @@ chmod 600 "$HOME/.config/storyteller-skill/.storyteller_token"
 
 - `GET /api/v2/books`
 - Requires bearer token.
+- `GET /api/health` can still return `200 OK` when the saved bearer token is stale; verify auth with a protected endpoint if upload calls fail.
 
 ## Uploading EPUB and M4B (TUS)
 
@@ -47,6 +48,8 @@ Recommended upload metadata keys:
 - `filetype`
 - `relativePath`
 - Optional: `collection`
+
+If upload creation fails with `401 Unauthorized` or `{"message":"Not authenticated"}`, refresh the token first before debugging request shape or TUS behavior.
 
 ## Update title and series
 

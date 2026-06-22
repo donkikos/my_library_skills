@@ -28,6 +28,7 @@ Use this sequence for every task:
 2. Discover access mode
    - Check whether Content Server is reachable and write-enabled.
    - If not, use direct local `calibredb --library-path`.
+   - If `calibredb` is blocked by sandbox write probes or library locks and the task is read-only, fall back to `sqlite3 metadata.db` plus direct filesystem inspection.
 3. Establish baseline counts
    - Compare series-based count vs author/title-based scope count.
 4. Diagnose mismatch
@@ -58,6 +59,8 @@ Prefer `calibredb` for writes. Use raw SQLite as read-only verification unless e
    - Use direct local `--library-path` mode.
 4. If local mode reports lock conflicts from another Calibre process:
    - Use remote mode through the running Content Server, or ask user to stop conflicting process.
+5. If local `calibredb` fails because it tries to create `calibre_test_case_sensitivity.txt` or another write-probe file:
+   - Treat that path as unsuitable for read-only checks in the current environment and use `sqlite3` plus file inspection instead.
 
 ## Safety Posture
 
