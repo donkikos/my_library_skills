@@ -1,11 +1,22 @@
 ---
 name: calibre-library
 description: Use Calibre CLI and Content Server workflows to diagnose library counts, reconcile missing series metadata, and safely update series/tags with lock-aware fallback between REST and local calibredb.
+platforms: [linux, macos]
+prerequisites:
+  commands: [calibredb, sqlite3, curl, jq]
 ---
 
 # Calibre Library Skill
 
 Use this skill when you need reliable Calibre library diagnostics or metadata updates via `calibredb`, `sqlite3`, and the Calibre Content Server API.
+
+## Runtime setup
+
+Set the library path once and use it in local commands:
+
+```bash
+CALIBRE_LIBRARY_PATH="${CALIBRE_LIBRARY_PATH:-/path/to/Calibre Library}"
+```
 
 ## When to Use This Skill
 
@@ -54,7 +65,7 @@ Prefer `calibredb` for writes. Use raw SQLite as read-only verification unless e
 1. If Content Server is running and writes are allowed:
    - Use `calibredb --with-library 'http://host:port/#library_id' ...`
 2. If Content Server is running but write calls return `Forbidden` or read-only:
-   - Fallback to `calibredb --library-path '/path/to/Calibre Library' ...`
+   - Fallback to `calibredb --library-path "$CALIBRE_LIBRARY_PATH" ...`
 3. If Content Server is not reachable:
    - Use direct local `--library-path` mode.
 4. If local mode reports lock conflicts from another Calibre process:

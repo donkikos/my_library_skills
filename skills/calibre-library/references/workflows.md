@@ -1,5 +1,11 @@
 # Calibre Workflows
 
+Set the library path before running these examples:
+
+```bash
+CALIBRE_LIBRARY_PATH="${CALIBRE_LIBRARY_PATH:-/path/to/Calibre Library}"
+```
+
 ## Workflow 1: Baseline Count Check
 
 Goal: compare "books tagged in series" vs "books that likely belong in series."
@@ -7,7 +13,7 @@ Goal: compare "books tagged in series" vs "books that likely belong in series."
 1. Get count by exact series field:
 
 ```bash
-sqlite3 '/path/to/Calibre Library/metadata.db' \
+sqlite3 "$CALIBRE_LIBRARY_PATH/metadata.db" \
 "select count(*)
  from books b
  join books_series_link bsl on b.id=bsl.book
@@ -18,7 +24,7 @@ sqlite3 '/path/to/Calibre Library/metadata.db' \
 2. Get count by author variants to estimate in-scope franchise books:
 
 ```bash
-sqlite3 '/path/to/Calibre Library/metadata.db' \
+sqlite3 "$CALIBRE_LIBRARY_PATH/metadata.db" \
 "select count(distinct b.id)
  from books b
  join books_authors_link bal on bal.book=b.id
@@ -33,7 +39,7 @@ If author-scope count is greater, you likely have books missing `series` metadat
 Use `calibredb` for a lock-safe functional query:
 
 ```bash
-calibredb --library-path '/path/to/Calibre Library' \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   list --search 'authors:"James S. A. Corey" and not series:"The Expanse"' --for-machine
 ```
 
@@ -49,7 +55,7 @@ calibredb --with-library 'http://localhost:8080/#Calibre_Library' \
 Inspect each candidate ID first:
 
 ```bash
-calibredb --library-path '/path/to/Calibre Library' show_metadata <id>
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" show_metadata <id>
 ```
 
 Capture current tags to avoid accidentally deleting non-`_sort_` tags.
@@ -66,11 +72,11 @@ Examples:
 
 ```bash
 # Book with only _sort_ tag -> clear tags
-calibredb --library-path '/path/to/Calibre Library' \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   set_metadata 101 --field 'series:The Expanse' --field 'series_index:5' --field 'tags:'
 
 # Book with real tags + _sort_ -> keep real tags, drop _sort_
-calibredb --library-path '/path/to/Calibre Library' \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   set_metadata 102 --field 'series:The Expanse' --field 'series_index:4' \
   --field 'tags:Fiction / Science Fiction / Action & Adventure,Fiction / Science Fiction / Space Opera,Fiction / Science Fiction / Hard Science Fiction'
 ```
@@ -80,14 +86,14 @@ calibredb --library-path '/path/to/Calibre Library' \
 1. Ensure no remaining in-scope books are outside the series:
 
 ```bash
-calibredb --library-path '/path/to/Calibre Library' \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   list --search 'authors:"James S. A. Corey" and not series:"The Expanse"' --for-machine
 ```
 
 2. Ensure expected final count:
 
 ```bash
-calibredb --library-path '/path/to/Calibre Library' \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   list --search 'authors:"James S. A. Corey" and series:"The Expanse"' --for-machine | jq 'length'
 ```
 

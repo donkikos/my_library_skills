@@ -3,8 +3,8 @@
 Use these variables for reusable commands:
 
 ```bash
-LIB='/Users/tigran/Calibre Library'
-DB="$LIB/metadata.db"
+CALIBRE_LIBRARY_PATH="${CALIBRE_LIBRARY_PATH:-/path/to/Calibre Library}"
+DB="$CALIBRE_LIBRARY_PATH/metadata.db"
 URL='http://localhost:8080'
 LID='Calibre_Library'
 ```
@@ -40,29 +40,29 @@ calibredb --with-library "$URL/#$LID" \
 Local mode fallback:
 
 ```bash
-calibredb --library-path "$LIB" \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   list --search 'authors:"James S. A. Corey" and not series:"The Expanse"' --for-machine
 ```
 
 ## Inspect Candidate Metadata
 
 ```bash
-calibredb --library-path "$LIB" show_metadata 101
-calibredb --library-path "$LIB" show_metadata 102
-calibredb --library-path "$LIB" show_metadata 107
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" show_metadata 101
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" show_metadata 102
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" show_metadata 107
 ```
 
 ## Apply Updates (Expanse Example)
 
 ```bash
-calibredb --library-path "$LIB" \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   set_metadata 101 --field 'series:The Expanse' --field 'series_index:5' --field 'tags:'
 
-calibredb --library-path "$LIB" \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   set_metadata 102 --field 'series:The Expanse' --field 'series_index:4' \
   --field 'tags:Fiction / Science Fiction / Action & Adventure,Fiction / Science Fiction / Space Opera,Fiction / Science Fiction / Hard Science Fiction'
 
-calibredb --library-path "$LIB" \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   set_metadata 107 --field 'series:The Expanse' --field 'series_index:6' \
   --field 'tags:Fiction / Science Fiction / Space Opera,Fiction / Science Fiction / Action & Adventure'
 ```
@@ -70,10 +70,10 @@ calibredb --library-path "$LIB" \
 ## Verify Completion
 
 ```bash
-calibredb --library-path "$LIB" \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   list --search 'authors:"James S. A. Corey" and not series:"The Expanse"' --for-machine
 
-calibredb --library-path "$LIB" \
+calibredb --library-path "$CALIBRE_LIBRARY_PATH" \
   list --search 'authors:"James S. A. Corey" and series:"The Expanse"' --for-machine | jq 'length'
 ```
 

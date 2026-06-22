@@ -1,5 +1,9 @@
 # Storyteller API Workflows
 
+## Runtime variables
+
+Raw commands expand the API base directly as `${STORYTELLER_API_BASE:-http://localhost:8001}`. Resolve the token path as `${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}`; Compose may set `STORYTELLER_TOKEN_FILE`, and the bundled scripts already honor it.
+
 ## Auth
 
 - `POST /api/v2/token`
@@ -18,12 +22,24 @@ scripts/get_token_from_clipboard.sh --username-or-email <username-or-email> --cl
 Equivalent raw form (without exposing password in CLI args):
 
 ```bash
-pbpaste | curl -sS -X POST 'http://localhost:8001/api/v2/token' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data-urlencode 'usernameOrEmail=<username-or-email>' \
-  --data-urlencode 'password@-' \
-| jq -r '.access_token' > "$HOME/.config/storyteller-skill/.storyteller_token"
-chmod 600 "$HOME/.config/storyteller-skill/.storyteller_token"
+TOKEN_FILE="${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}"
+mkdir -p "$(dirname "$TOKEN_FILE")"
+
+TOKEN="$(
+  pbpaste | curl -fsS -X POST "${STORYTELLER_API_BASE:-http://localhost:8001}/api/v2/token" \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    --data-urlencode 'usernameOrEmail=<username-or-email>' \
+    --data-urlencode 'password@-' \
+  | jq -r '.access_token // empty'
+)"
+
+[ -n "$TOKEN" ] || {
+  echo "Token endpoint returned no access token" >&2
+  exit 1
+}
+
+printf '%s\n' "$TOKEN" > "$TOKEN_FILE"
+chmod 600 "$TOKEN_FILE"
 ```
 
 ## Book listing
@@ -49,7 +65,7 @@ Recommended upload metadata keys:
 - `relativePath`
 - Optional: `collection`
 
-If upload creation fails with `401 Unauthorized` or `{"message":"Not authenticated"}`, refresh the token first before debugging request shape or TUS behavior.
+If upload creation returns a live `401 Unauthorized` or `{"message":"Not authenticated"}`, the API is reachable and the external credential is stale or invalid. Refresh the token before debugging request shape or TUS behavior. Treat connection errors and timeouts separately as network failures.
 
 ## Update title and series
 

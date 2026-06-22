@@ -1,6 +1,9 @@
 ---
 name: storyteller
 description: "Manage a local Storyteller server via API: authenticate with bearer tokens, list books, upload EPUB plus M4B with TUS, update title or series metadata, and queue or cancel alignment processing. Use when the user asks to add books, inspect library state, fix metadata, or run alignment in Storyteller."
+platforms: [linux, macos]
+prerequisites:
+  commands: [bash, curl, jq, file, uuidgen]
 ---
 
 # Storyteller
@@ -9,9 +12,13 @@ Use this skill to perform reliable Storyteller API operations on a local instanc
 
 ## Defaults
 
-- Use API base URL `http://localhost:8001` unless the user specifies otherwise.
+```bash
+STORYTELLER_API_BASE="${STORYTELLER_API_BASE:-http://localhost:8001}"
+```
+
+- Use the same default expansion directly in API command examples.
 - Read auth token from `STORYTELLER_TOKEN` env var first.
-- Fall back to token file `$HOME/.config/storyteller-skill/.storyteller_token` (or `STORYTELLER_TOKEN_FILE`).
+- Resolve the token path as `${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}`. Compose can set `STORYTELLER_TOKEN_FILE`, and the bundled scripts already honor it.
 - Keep token files out of git and permissioned to owner only (`chmod 600`).
 
 ## Token setup
@@ -25,7 +32,7 @@ Use the bundled script to avoid typing passwords in shell commands.
 scripts/get_token_from_clipboard.sh --username-or-email <username-or-email> --clear-clipboard
 ```
 
-This reads password from `pbpaste`, calls `POST /api/v2/token`, and stores `access_token` to `$HOME/.config/storyteller-skill/.storyteller_token`.
+This reads the password from `pbpaste`, calls `POST /api/v2/token`, and stores `access_token` at `${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}`.
 
 ## Use scripts
 
@@ -50,7 +57,7 @@ Run bundled scripts for deterministic behavior:
 ## Failure diagnosis
 
 - Use `scripts/diagnose_alignment_error.sh <book_uuid>` to correlate API status with recent worker logs.
-- If `GET /api/health` is healthy but `POST /api/v2/books/upload` returns `401 Unauthorized` or `{"message":"Not authenticated"}`, treat the token as stale and refresh it before debugging TUS.
+- A live `401 Unauthorized` or `{"message":"Not authenticated"}` response proves the API was reached and points to a stale or invalid external credential, not a network failure or documentation implementation defect. Refresh the token before debugging TUS; diagnose connection errors and timeouts as network issues.
 - If stage is `TRANSCRIBE_CHAPTERS` and logs keep advancing `Transcribing audio file ...`, treat it as active processing, not a failure.
 
 ## Safety rules
