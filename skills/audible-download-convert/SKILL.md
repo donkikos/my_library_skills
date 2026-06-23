@@ -155,6 +155,8 @@ override.
   characters.
 - Book folders must be single non-dot path components without separators or
   control characters.
+- Configured data roots may be symlinks, but per-book source and target paths
+  must be real direct children and may not cross a symlink boundary.
 - Keep `--frozen` on direct uv commands; do not replace the locked workflow
   with pip or an ad hoc virtual environment.
 - The helper pre-checks idempotency: if the final `.m4b` exists, it skips the

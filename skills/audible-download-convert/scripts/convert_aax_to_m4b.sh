@@ -56,7 +56,7 @@ trim_metadata_value() {
 abs_dir() {
   local p
   p="$1"
-  (cd "$p" && pwd)
+  (cd "$p" && pwd -P)
 }
 
 find_cover_sidecar() {
@@ -154,9 +154,17 @@ TARGET_DIR_ABS="$(abs_dir "$TARGET_DIR")"
 declare -a SOURCE_DIRS
 if (($# > 0)); then
   for arg in "$@"; do
+    if [[ -L "$arg" || -L "${arg%/}" ]]; then
+      log "ERROR unsafe symlink/path boundary: refusing symlink source: $arg"
+      exit 1
+    fi
     if [[ -d "$arg" ]]; then
       SOURCE_DIRS+=("$(abs_dir "$arg")")
     elif [[ -f "$arg" && "${arg##*.}" == "aax" ]]; then
+      if [[ -L "$(dirname "$arg")" ]]; then
+        log "ERROR unsafe symlink/path boundary: refusing symlink source folder: $(dirname "$arg")"
+        exit 1
+      fi
       SOURCE_DIRS+=("$(abs_dir "$(dirname "$arg")")")
     else
       log "ERROR Argument must be a book folder or .aax file: $arg"
@@ -164,6 +172,10 @@ if (($# > 0)); then
     fi
   done
 else
+  while IFS= read -r -d '' d; do
+    log "ERROR unsafe symlink/path boundary: refusing symlink source: $d"
+    exit 1
+  done < <(find "$SRC_DIR_ABS" -mindepth 1 -maxdepth 1 -type l -print0)
   while IFS= read -r d; do
     SOURCE_DIRS+=("$d")
   done < <(find "$SRC_DIR_ABS" -mindepth 1 -maxdepth 1 -type d | sort)
@@ -194,8 +206,9 @@ for source_dir in "${UNIQUE_SOURCE_DIRS[@]}"; do
     continue
   fi
 
+  source_dir="$(abs_dir "$source_dir")"
   if [[ "$(dirname "$source_dir")" != "$SRC_DIR_ABS" ]]; then
-    log "ERROR Source folder must be directly under $SRC_DIR_ABS: $source_dir"
+    log "ERROR unsafe symlink/path boundary: source folder must be directly under $SRC_DIR_ABS: $source_dir"
     exit 1
   fi
 
@@ -278,6 +291,10 @@ for source_dir in "${UNIQUE_SOURCE_DIRS[@]}"; do
   cover_file="$output_directory/$source_folder_name.jpg"
   chapters_txt="$output_directory/$source_folder_name.chapters.txt"
 
+  if [[ -L "$output_directory" ]]; then
+    log "ERROR unsafe symlink/path boundary: refusing symlink target: $output_directory"
+    exit 1
+  fi
   if [[ -d "$output_directory" ]]; then
     log "Noclobber enabled but directory '$output_directory' exists. Skipping."
     continue

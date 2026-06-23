@@ -97,6 +97,31 @@ cleanup_empty_dir() {
   fi
 }
 
+validate_direct_child() {
+  local root="$1"
+  local child="$2"
+  local root_abs child_abs
+
+  if [[ -L "$child" ]]; then
+    echo "unsafe symlink/path boundary: refusing symlink path: $child" >&2
+    return 1
+  fi
+  if [[ ! -e "$child" ]]; then
+    return 0
+  fi
+  if [[ ! -d "$root" || ! -d "$child" ]]; then
+    echo "unsafe symlink/path boundary: expected directories under configured root: $child" >&2
+    return 1
+  fi
+
+  root_abs="$(cd "$root" && pwd -P)"
+  child_abs="$(cd "$child" && pwd -P)"
+  if [[ "$(dirname "$child_abs")" != "$root_abs" ]]; then
+    echo "unsafe symlink/path boundary: path escapes configured root: $child" >&2
+    return 1
+  fi
+}
+
 verify_outputs() {
   local out_dir="$1"
   local folder="$2"
@@ -187,7 +212,7 @@ if [[ -n "$AUDIT_FILE" ]]; then
 fi
 
 process_one() {
-  local asin raw_folder folder book_dir out_dir out_file created_dir
+  local asin raw_folder folder source_root target_root book_dir out_dir out_file created_dir
   local -a download_cmd
   asin="$(trim_ws "$1")"
   raw_folder="$2"
@@ -213,9 +238,14 @@ process_one() {
     return 1
   fi
 
-  book_dir="$BASE_DIR/aax_orig/$folder"
-  out_dir="$BASE_DIR/aax_converted/$folder"
+  source_root="$BASE_DIR/aax_orig"
+  target_root="$BASE_DIR/aax_converted"
+  book_dir="$source_root/$folder"
+  out_dir="$target_root/$folder"
   out_file="$out_dir/$folder.m4b"
+
+  validate_direct_child "$source_root" "$book_dir" || return 1
+  validate_direct_child "$target_root" "$out_dir" || return 1
 
   if [[ -f "$out_file" ]]; then
     echo "Skip: output already exists: $out_file"
@@ -237,10 +267,14 @@ process_one() {
   fi
 
   created_dir=0
+  mkdir -p "$source_root"
+  validate_direct_child "$source_root" "$book_dir" || return 1
+  validate_direct_child "$target_root" "$out_dir" || return 1
   if [[ ! -d "$book_dir" ]]; then
     mkdir -p "$book_dir"
     created_dir=1
   fi
+  validate_direct_child "$source_root" "$book_dir" || return 1
 
   download_cmd=(uv run --project "$SKILL_DIR" --frozen audible)
   if [[ -n "$PROFILE" ]]; then
