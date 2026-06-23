@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audible Download Convert"
+  short_description: "Download Audible titles and convert them to M4B"
+  default_prompt: "Use $audible-download-convert to download an Audible title by ASIN and convert it to M4B."
