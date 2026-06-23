@@ -73,8 +73,9 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 SKILL_DIR="$REPO_ROOT/skills/audible-download-convert"
 AUDIBLE_VENV_DIR="${AUDIBLE_VENV_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/audible-download-convert/venv}"
 AUDIBLE_CONFIG_DIR="${AUDIBLE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/audible}"
+export AUDIBLE_CONFIG_DIR
 AUDIBLE_AUTHCODE_FILE="${AUDIBLE_AUTHCODE_FILE:-$AUDIBLE_CONFIG_DIR/.authcode}"
-mkdir -p "$AUDIBLE_CONFIG_DIR"
+mkdir -p "$(dirname "$AUDIBLE_AUTHCODE_FILE")"
 umask 077
 UV_PROJECT_ENVIRONMENT="$AUDIBLE_VENV_DIR" \
   uv run --project "$SKILL_DIR" --frozen audible quickstart

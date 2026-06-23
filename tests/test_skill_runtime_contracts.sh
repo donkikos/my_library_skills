@@ -147,9 +147,10 @@ assert_line "$AUDIBLE_SKILL" \
   'AUDIBLE_VENV_DIR="${AUDIBLE_VENV_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/audible-download-convert/venv}"'
 assert_line "$AUDIBLE_SKILL" \
   'AUDIBLE_CONFIG_DIR="${AUDIBLE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/audible}"'
+assert_line "$AUDIBLE_SKILL" 'export AUDIBLE_CONFIG_DIR'
 assert_line "$AUDIBLE_SKILL" \
   'AUDIBLE_AUTHCODE_FILE="${AUDIBLE_AUTHCODE_FILE:-$AUDIBLE_CONFIG_DIR/.authcode}"'
-assert_line "$AUDIBLE_SKILL" 'mkdir -p "$AUDIBLE_CONFIG_DIR"'
+assert_line "$AUDIBLE_SKILL" 'mkdir -p "$(dirname "$AUDIBLE_AUTHCODE_FILE")"'
 assert_line "$AUDIBLE_SKILL" 'umask 077'
 assert_line "$AUDIBLE_SKILL" 'chmod 600 "$AUDIBLE_AUTHCODE_FILE"'
 assert_line "$IGNORE_FILE" '.venv/'
