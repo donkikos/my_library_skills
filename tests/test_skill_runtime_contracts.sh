@@ -118,7 +118,6 @@ while IFS= read -r match; do
 done < <(grep -Hn 'localhost' "$STORYTELLER_SKILL" "$STORYTELLER_WORKFLOWS" || true)
 
 for required_file in \
-  "$AUDIBLE_SKILL" \
   "$AUDIBLE_DOWNLOAD" \
   "$AUDIBLE_CONVERT" \
   "$AUDIBLE_PROJECT" \
@@ -126,6 +125,12 @@ for required_file in \
   [[ -f "$required_file" ]] || fail "required file does not exist: $required_file"
 done
 
+assert_contains "$AUDIBLE_CONVERT" 'SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"'
+assert_contains "$AUDIBLE_CONVERT" 'REPO_ROOT="$(cd "$SKILL_DIR/../.." && pwd)"'
+assert_contains "$AUDIBLE_CONVERT" \
+  'BASE_DIR="${BASE_DIR:-$REPO_ROOT/audible_data}"'
+
+[[ -f "$AUDIBLE_SKILL" ]] || fail "required file does not exist: $AUDIBLE_SKILL"
 assert_frontmatter_contract "$AUDIBLE_SKILL" '[bash, uv, ffmpeg, ffprobe, jq]'
 assert_contains "$AUDIBLE_SKILL" \
   'AUDIBLE_DATA_DIR="${AUDIBLE_DATA_DIR:-$REPO_ROOT/audible_data}"'

@@ -2,7 +2,9 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BASE_DIR="${BASE_DIR:-$SCRIPT_DIR/audible_data}"
+SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+REPO_ROOT="$(cd "$SKILL_DIR/../.." && pwd)"
+BASE_DIR="${BASE_DIR:-$REPO_ROOT/audible_data}"
 SRC_DIR="${SRC_DIR:-$BASE_DIR/aax_orig}"
 TARGET_DIR="${TARGET_DIR:-$BASE_DIR/aax_converted}"
 

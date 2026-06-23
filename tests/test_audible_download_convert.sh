@@ -19,6 +19,13 @@ assert_contains() {
   grep -F -- "$expected" "$file" >/dev/null || fail "missing '$expected' in $file"
 }
 
+# Direct converter use must keep the repository-level audible_data default after
+# the script is relocated under the skill.
+assert_contains "$CONVERT_SCRIPT" 'SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"'
+assert_contains "$CONVERT_SCRIPT" 'SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"'
+assert_contains "$CONVERT_SCRIPT" 'REPO_ROOT="$(cd "$SKILL_DIR/../.." && pwd)"'
+assert_contains "$CONVERT_SCRIPT" 'BASE_DIR="${BASE_DIR:-$REPO_ROOT/audible_data}"'
+
 FAKE_BIN="$TMP_DIR/bin"
 mkdir -p "$FAKE_BIN"
 cat >"$FAKE_BIN/uv" <<'EOF'
