@@ -71,7 +71,7 @@ if [ "$RESTART" -eq 1 ] && [ "$CANCEL" -eq 1 ]; then
 fi
 
 require_cmd curl
-TOKEN="$(resolve_token "$TOKEN_FILE")"
+TOKEN="$(resolve_token "$TOKEN_FILE" "$API_BASE")"
 
 METHOD="POST"
 URL="$API_BASE/api/v2/books/$BOOK_UUID/process"

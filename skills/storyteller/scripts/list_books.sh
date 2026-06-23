@@ -45,7 +45,7 @@ while [ $# -gt 0 ]; do
 done
 
 require_cmd curl
-TOKEN="$(resolve_token "$TOKEN_FILE")"
+TOKEN="$(resolve_token "$TOKEN_FILE" "$API_BASE")"
 JSON="$(curl -fsS "$API_BASE/api/v2/books" -H "Authorization: Bearer $TOKEN" -H 'Accept: application/json')"
 
 if [ "$RAW_JSON" -eq 1 ] || ! command -v jq >/dev/null 2>&1; then

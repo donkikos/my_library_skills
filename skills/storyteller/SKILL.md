@@ -19,14 +19,24 @@ STORYTELLER_API_BASE="${STORYTELLER_API_BASE:-http://localhost:8001}"
 - Use the same default expansion directly in API command examples.
 - Read auth token from `STORYTELLER_TOKEN` env var first.
 - Resolve the token path as `${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}`. Compose can set `STORYTELLER_TOKEN_FILE`, and the bundled scripts already honor it.
+- Optionally set both `STORYTELLER_USERNAME_OR_EMAIL` and `STORYTELLER_PASSWORD` so scripts can create or refresh the saved token.
 - Keep token files out of git and permissioned to owner only (`chmod 600`).
 
 ## Token setup
 
-Use the bundled script to avoid typing passwords in shell commands.
+Bundled operation scripts use this order:
 
-1. Copy the Storyteller password to clipboard.
-2. Run with the actual local Storyteller username or email:
+1. `STORYTELLER_TOKEN`
+2. The configured token file
+3. Username/password only when no token exists or validation returns HTTP `401`
+
+When credentials are available, a missing or stale token is replaced through
+`POST /api/v2/token`. The script overwrites the configured token file, with its
+directory mode set to `700` and file mode set to `600`. Both credential
+variables must be set; the password is sent to `curl` through standard input.
+
+For manual setup without password environment variables, copy the Storyteller
+password to the clipboard and run:
 
 ```bash
 scripts/get_token_from_clipboard.sh --username-or-email <username-or-email> --clear-clipboard
@@ -57,7 +67,7 @@ Run bundled scripts for deterministic behavior:
 ## Failure diagnosis
 
 - Use `scripts/diagnose_alignment_error.sh <book_uuid>` to correlate API status with recent worker logs.
-- A live `401 Unauthorized` or `{"message":"Not authenticated"}` response proves the API was reached and points to a stale or invalid external credential, not a network failure or documentation implementation defect. Refresh the token before debugging TUS; diagnose connection errors and timeouts as network issues.
+- A live `401 Unauthorized` or `{"message":"Not authenticated"}` response proves the API was reached and points to a stale or invalid external credential, not a network failure or documentation implementation defect. Bundled scripts refresh once when both credential variables are set; otherwise refresh the token before debugging TUS. Diagnose connection errors and timeouts as network issues.
 - If stage is `TRANSCRIBE_CHAPTERS` and logs keep advancing `Transcribing audio file ...`, treat it as active processing, not a failure.
 
 ## Safety rules
@@ -71,6 +81,7 @@ Run bundled scripts for deterministic behavior:
 - Token endpoint: `POST /api/v2/token` with form fields `usernameOrEmail` and `password`.
 - Auth response contains `access_token`, `expires_in`, `token_type`.
 - Protected endpoints accept `Authorization: Bearer <token>`.
+- Bundled scripts validate configured tokens against a protected endpoint and persist one refreshed token after HTTP `401`; they do not repeatedly retry authentication.
 - `GET /api/health` does not validate auth; always use a protected endpoint when checking whether a token is still valid.
 - TUS upload metadata must include at least `bookUuid` and `filename`; in practice include `filetype` and `relativePath`.
 - Queue alignment endpoint supports `?restart=1` to force a fresh run.

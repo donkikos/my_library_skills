@@ -79,8 +79,14 @@ assert_contains "$STORYTELLER_SKILL" \
   'STORYTELLER_API_BASE="${STORYTELLER_API_BASE:-http://localhost:8001}"'
 assert_contains "$STORYTELLER_SKILL" \
   '${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}'
+assert_contains "$STORYTELLER_SKILL" 'STORYTELLER_USERNAME_OR_EMAIL'
+assert_contains "$STORYTELLER_SKILL" 'STORYTELLER_PASSWORD'
+assert_contains "$STORYTELLER_SKILL" 'HTTP `401`'
+assert_contains "$STORYTELLER_SKILL" 'overwrites the configured token file'
 assert_contains "$STORYTELLER_WORKFLOWS" \
   '"${STORYTELLER_API_BASE:-http://localhost:8001}/api/v2/token"'
+assert_contains "$STORYTELLER_WORKFLOWS" 'STORYTELLER_USERNAME_OR_EMAIL'
+assert_contains "$STORYTELLER_WORKFLOWS" 'STORYTELLER_PASSWORD'
 assert_contains "$STORYTELLER_WORKFLOWS" \
   '"${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}"'
 assert_contains "$STORYTELLER_WORKFLOWS" \

@@ -87,7 +87,7 @@ fi
 
 require_cmd curl
 require_cmd jq
-TOKEN="$(resolve_token "$TOKEN_FILE")"
+TOKEN="$(resolve_token "$TOKEN_FILE" "$API_BASE")"
 
 BOOK_JSON="$(curl -fsS "$API_BASE/api/v2/books/$BOOK_UUID" -H "Authorization: Bearer $TOKEN" -H 'Accept: application/json')"
 

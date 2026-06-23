@@ -4,6 +4,12 @@
 
 Raw commands expand the API base directly as `${STORYTELLER_API_BASE:-http://localhost:8001}`. Resolve the token path as `${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}`; Compose may set `STORYTELLER_TOKEN_FILE`, and the bundled scripts already honor it.
 
+Bundled operation scripts use `STORYTELLER_TOKEN` first, then the token file.
+Set both `STORYTELLER_USERNAME_OR_EMAIL` and `STORYTELLER_PASSWORD` to let them
+create a missing token or replace a token rejected with HTTP `401`. A refreshed
+token overwrites the configured token file securely; incomplete credentials
+fail when refresh is required.
+
 ## Auth
 
 - `POST /api/v2/token`
@@ -42,6 +48,19 @@ printf '%s\n' "$TOKEN" > "$TOKEN_FILE"
 chmod 600 "$TOKEN_FILE"
 ```
 
+### Automatic refresh from environment credentials
+
+```bash
+export STORYTELLER_USERNAME_OR_EMAIL='reader@example.com'
+export STORYTELLER_PASSWORD='...'
+scripts/list_books.sh
+```
+
+The scripts validate the selected bearer token against `GET /api/v2/books`.
+After HTTP `401`, they call the token endpoint once, save the returned token,
+and continue with it. Password input is piped to `curl`; it is not included in
+the command arguments. Unset the password variable when it is no longer needed.
+
 ## Book listing
 
 - `GET /api/v2/books`
@@ -65,7 +84,7 @@ Recommended upload metadata keys:
 - `relativePath`
 - Optional: `collection`
 
-If upload creation returns a live `401 Unauthorized` or `{"message":"Not authenticated"}`, the API is reachable and the external credential is stale or invalid. Refresh the token before debugging request shape or TUS behavior. Treat connection errors and timeouts separately as network failures.
+If upload creation returns a live `401 Unauthorized` or `{"message":"Not authenticated"}`, the API is reachable and the external credential is stale or invalid. Bundled scripts refresh during token validation when both credential variables are set. Otherwise refresh the token before debugging request shape or TUS behavior. Treat connection errors and timeouts separately as network failures.
 
 ## Update title and series
 

@@ -75,7 +75,7 @@ if [ -z "$BOOK_UUID" ]; then
   BOOK_UUID="$(uuidgen | tr '[:upper:]' '[:lower:]')"
 fi
 
-TOKEN="$(resolve_token "$TOKEN_FILE")"
+TOKEN="$(resolve_token "$TOKEN_FILE" "$API_BASE")"
 
 upload_one() {
   local file_path="$1"
