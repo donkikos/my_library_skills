@@ -153,6 +153,8 @@ override.
   `aax_converted`.
 - ASIN input is normalized to uppercase and must resolve to 10 alphanumeric
   characters.
+- Book folders must be single non-dot path components without separators or
+  control characters.
 - Keep `--frozen` on direct uv commands; do not replace the locked workflow
   with pip or an ad hoc virtual environment.
 - The helper pre-checks idempotency: if the final `.m4b` exists, it skips the

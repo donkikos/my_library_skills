@@ -42,6 +42,20 @@ is_valid_asin() {
   [[ "$1" =~ ^[A-Z0-9]{10}$ ]]
 }
 
+is_valid_book_folder() {
+  local folder="$1"
+  local LC_ALL=C
+
+  [[ -n "$folder" ]] || return 1
+  [[ "$folder" != "." && "$folder" != ".." ]] || return 1
+  case "$folder" in
+    */*|*\\*)
+      return 1
+      ;;
+  esac
+  [[ ! "$folder" =~ [[:cntrl:]] ]]
+}
+
 ensure_audit_header() {
   if [[ -z "$AUDIT_FILE" ]]; then
     return 0
@@ -180,6 +194,11 @@ process_one() {
   fi
   if ! is_valid_asin "$asin"; then
     echo "Invalid ASIN '$asin'. Expected 10 uppercase alphanumeric chars." >&2
+    return 1
+  fi
+  if ! is_valid_book_folder "$folder"; then
+    printf "Invalid book folder '%q'. Expected a single folder name without path separators, dot components, or control characters.\n" \
+      "$folder" >&2
     return 1
   fi
 

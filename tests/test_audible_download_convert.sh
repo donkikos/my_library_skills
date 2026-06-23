@@ -54,6 +54,53 @@ EOF
 chmod +x "$FAKE_BIN/uv"
 
 DATA_DIR="$TMP_DIR/data"
+
+assert_invalid_book_folder() {
+  local label="$1"
+  local folder="$2"
+  local output="$TMP_DIR/invalid-$label.out"
+
+  if PATH="$FAKE_BIN:/usr/bin:/bin" \
+    AUDIBLE_DATA_DIR="$DATA_DIR" \
+    "$DOWNLOAD_SCRIPT" --asin B07D9RHRH5 --book-folder "$folder" --dry-run \
+    >"$output" 2>&1; then
+    fail "unsafe book folder unexpectedly accepted: $label"
+  fi
+  assert_contains "$output" "Invalid book folder"
+}
+
+assert_invalid_book_folder "parent" "../outside"
+[[ ! -e "$TMP_DIR/outside" ]] ||
+  fail "parent traversal created a path outside AUDIBLE_DATA_DIR"
+assert_invalid_book_folder "absolute" "$TMP_DIR/outside"
+assert_invalid_book_folder "slash" "Author/Book"
+assert_invalid_book_folder "backslash" 'Author\Book'
+assert_invalid_book_folder "dot" "."
+assert_invalid_book_folder "dot-dot" ".."
+assert_invalid_book_folder "newline" $'Author\nBook'
+assert_invalid_book_folder "tab" $'Author\tBook'
+
+MANIFEST="$TMP_DIR/unsafe.tsv"
+printf 'B07D9RHRH5\t../manifest-outside\n' >"$MANIFEST"
+if PATH="$FAKE_BIN:/usr/bin:/bin" \
+  AUDIBLE_DATA_DIR="$DATA_DIR" \
+  "$DOWNLOAD_SCRIPT" --manifest "$MANIFEST" --dry-run \
+  >"$TMP_DIR/invalid-manifest.out" 2>&1; then
+  fail "unsafe manifest book folder unexpectedly accepted"
+fi
+assert_contains "$TMP_DIR/invalid-manifest.out" "Invalid book folder"
+assert_contains "$TMP_DIR/invalid-manifest.out" "Aborting on manifest line 1."
+
+VALID_FOLDER="Léon O'Brien - Vol. 2"
+if ! PATH="$FAKE_BIN:/usr/bin:/bin" \
+  AUDIBLE_DATA_DIR="$DATA_DIR" \
+  "$DOWNLOAD_SCRIPT" --asin B07D9RHRH5 --book-folder "$VALID_FOLDER" --dry-run \
+  >"$TMP_DIR/valid-folder.out" 2>&1; then
+  cat "$TMP_DIR/valid-folder.out" >&2
+  fail "valid Unicode book folder was rejected"
+fi
+assert_contains "$TMP_DIR/valid-folder.out" "$DATA_DIR/aax_orig/$VALID_FOLDER"
+
 if ! PATH="$FAKE_BIN:/usr/bin:/bin" \
   AUDIBLE_DATA_DIR="$DATA_DIR" \
   "$DOWNLOAD_SCRIPT" --asin B07D9RHRH5 --book-folder "Test Book" --dry-run \
