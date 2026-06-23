@@ -161,11 +161,11 @@ assert_line "$IGNORE_FILE" '.authcode'
 assert_line "$IGNORE_FILE" 'audible_data/'
 assert_contains "$AUDIBLE_DOWNLOAD" 'SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"'
 assert_contains "$AUDIBLE_DOWNLOAD" 'REPO_ROOT="$(cd "$SKILL_DIR/../.." && pwd)"'
-assert_contains "$AUDIBLE_DOWNLOAD" \
+assert_line "$AUDIBLE_DOWNLOAD" \
   'AUDIBLE_CONFIG_DIR="${AUDIBLE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/audible}"'
-assert_contains "$AUDIBLE_DOWNLOAD" \
+assert_line "$AUDIBLE_DOWNLOAD" \
   'AUDIBLE_AUTHCODE_FILE="${AUDIBLE_AUTHCODE_FILE:-$AUDIBLE_CONFIG_DIR/.authcode}"'
-assert_contains "$AUDIBLE_DOWNLOAD" \
+assert_line "$AUDIBLE_DOWNLOAD" \
   'export AUDIBLE_CONFIG_DIR AUDIBLE_AUTHCODE_FILE'
 assert_contains "$AUDIBLE_DOWNLOAD" \
   'download_cmd=(uv run --project "$SKILL_DIR" --frozen audible)'
