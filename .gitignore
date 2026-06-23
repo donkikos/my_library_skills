@@ -1,3 +1,5 @@
 .history/
 .worktrees/
+.venv/
+.authcode
 audible_data/

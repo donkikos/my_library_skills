@@ -3,6 +3,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+IGNORE_FILE="$ROOT_DIR/.gitignore"
 CALIBRE_SKILL="$ROOT_DIR/skills/calibre-library/SKILL.md"
 CALIBRE_WORKFLOWS="$ROOT_DIR/skills/calibre-library/references/workflows.md"
 CALIBRE_RECIPES="$ROOT_DIR/skills/calibre-library/references/command-recipes.md"
@@ -25,6 +26,14 @@ assert_contains() {
 
   grep -Fq -- "$expected" "$file" ||
     fail "$file does not contain: $expected"
+}
+
+assert_line() {
+  local file="$1"
+  local expected="$2"
+
+  grep -Fxq -- "$expected" "$file" ||
+    fail "$file does not contain exact line: $expected"
 }
 
 frontmatter() {
@@ -132,8 +141,19 @@ assert_contains "$AUDIBLE_CONVERT" \
 
 [[ -f "$AUDIBLE_SKILL" ]] || fail "required file does not exist: $AUDIBLE_SKILL"
 assert_frontmatter_contract "$AUDIBLE_SKILL" '[bash, uv, ffmpeg, ffprobe, jq]'
-assert_contains "$AUDIBLE_SKILL" \
+assert_line "$AUDIBLE_SKILL" \
   'AUDIBLE_DATA_DIR="${AUDIBLE_DATA_DIR:-$REPO_ROOT/audible_data}"'
+assert_line "$AUDIBLE_SKILL" \
+  'AUDIBLE_VENV_DIR="${AUDIBLE_VENV_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/audible-download-convert/venv}"'
+assert_line "$AUDIBLE_SKILL" \
+  'AUDIBLE_CONFIG_DIR="${AUDIBLE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/audible}"'
+assert_line "$AUDIBLE_SKILL" \
+  'AUDIBLE_AUTHCODE_FILE="${AUDIBLE_AUTHCODE_FILE:-$AUDIBLE_CONFIG_DIR/.authcode}"'
+assert_line "$AUDIBLE_SKILL" 'mkdir -p "$AUDIBLE_CONFIG_DIR"'
+assert_line "$AUDIBLE_SKILL" 'umask 077'
+assert_line "$AUDIBLE_SKILL" 'chmod 600 "$AUDIBLE_AUTHCODE_FILE"'
+assert_line "$IGNORE_FILE" '.venv/'
+assert_line "$IGNORE_FILE" '.authcode'
 assert_contains "$AUDIBLE_DOWNLOAD" 'SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"'
 assert_contains "$AUDIBLE_DOWNLOAD" 'REPO_ROOT="$(cd "$SKILL_DIR/../.." && pwd)"'
 assert_contains "$AUDIBLE_DOWNLOAD" \
