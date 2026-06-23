@@ -140,6 +140,28 @@ EOF
 cmp "$TMP_DIR/expected-converter.log" "$CONVERTER_LOG" ||
   fail "configured data root did not reach converter"
 
+DEFAULT_CONFIG_DIR="$TMP_DIR/default-config"
+if ! /usr/bin/env -u AUDIBLE_AUTHCODE_FILE \
+  PATH="$FAKE_BIN:/usr/bin:/bin" \
+  UV_LOG="$TMP_DIR/default-success-uv.log" \
+  UV_MODE=success \
+  CONVERTER_LOG="$CONVERTER_LOG" \
+  AUDIBLE_DATA_DIR="$DATA_DIR" \
+  AUDIBLE_CONFIG_DIR="$DEFAULT_CONFIG_DIR" \
+  /bin/bash "$DOWNLOAD_SCRIPT" --asin B07D9RHRH5 --book-folder "Default Authcode Book" \
+  >"$TMP_DIR/default-success.out" 2>&1; then
+  cat "$TMP_DIR/default-success.out" >&2
+  fail "fake conversion with default authcode path failed"
+fi
+cat >"$TMP_DIR/expected-default-converter.log" <<EOF
+BASE_DIR=$DATA_DIR
+AUDIBLE_AUTHCODE_FILE=$DEFAULT_CONFIG_DIR/.authcode
+ARG=$CONVERT_SCRIPT
+ARG=$DATA_DIR/aax_orig/Default Authcode Book
+EOF
+cmp "$TMP_DIR/expected-default-converter.log" "$CONVERTER_LOG" ||
+  fail "default authcode path did not reach converter"
+
 for command_name in ffmpeg ffprobe jq; do
   cat >"$FAKE_BIN/$command_name" <<'EOF'
 #!/usr/bin/env bash

@@ -14,6 +14,7 @@ AUDIBLE_DOWNLOAD="$ROOT_DIR/skills/audible-download-convert/scripts/download_and
 AUDIBLE_CONVERT="$ROOT_DIR/skills/audible-download-convert/scripts/convert_aax_to_m4b.sh"
 AUDIBLE_PROJECT="$ROOT_DIR/skills/audible-download-convert/pyproject.toml"
 AUDIBLE_LOCK="$ROOT_DIR/skills/audible-download-convert/uv.lock"
+AUDIBLE_AGENT="$ROOT_DIR/skills/audible-download-convert/agents/openai.yaml"
 
 fail() {
   echo "FAIL: $*" >&2
@@ -130,7 +131,8 @@ for required_file in \
   "$AUDIBLE_DOWNLOAD" \
   "$AUDIBLE_CONVERT" \
   "$AUDIBLE_PROJECT" \
-  "$AUDIBLE_LOCK"; do
+  "$AUDIBLE_LOCK" \
+  "$AUDIBLE_AGENT"; do
   [[ -f "$required_file" ]] || fail "required file does not exist: $required_file"
 done
 
@@ -156,8 +158,15 @@ assert_line "$AUDIBLE_SKILL" 'umask 077'
 assert_line "$AUDIBLE_SKILL" 'chmod 600 "$AUDIBLE_AUTHCODE_FILE"'
 assert_line "$IGNORE_FILE" '.venv/'
 assert_line "$IGNORE_FILE" '.authcode'
+assert_line "$IGNORE_FILE" 'audible_data/'
 assert_contains "$AUDIBLE_DOWNLOAD" 'SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"'
 assert_contains "$AUDIBLE_DOWNLOAD" 'REPO_ROOT="$(cd "$SKILL_DIR/../.." && pwd)"'
+assert_contains "$AUDIBLE_DOWNLOAD" \
+  'AUDIBLE_CONFIG_DIR="${AUDIBLE_CONFIG_DIR:-${XDG_CONFIG_HOME:-$HOME/.config}/audible}"'
+assert_contains "$AUDIBLE_DOWNLOAD" \
+  'AUDIBLE_AUTHCODE_FILE="${AUDIBLE_AUTHCODE_FILE:-$AUDIBLE_CONFIG_DIR/.authcode}"'
+assert_contains "$AUDIBLE_DOWNLOAD" \
+  'export AUDIBLE_CONFIG_DIR AUDIBLE_AUTHCODE_FILE'
 assert_contains "$AUDIBLE_DOWNLOAD" \
   'download_cmd=(uv run --project "$SKILL_DIR" --frozen audible)'
 assert_contains "$AUDIBLE_DOWNLOAD" \
