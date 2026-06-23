@@ -8,6 +8,11 @@ CALIBRE_WORKFLOWS="$ROOT_DIR/skills/calibre-library/references/workflows.md"
 CALIBRE_RECIPES="$ROOT_DIR/skills/calibre-library/references/command-recipes.md"
 STORYTELLER_SKILL="$ROOT_DIR/skills/storyteller/SKILL.md"
 STORYTELLER_WORKFLOWS="$ROOT_DIR/skills/storyteller/references/api-workflows.md"
+AUDIBLE_SKILL="$ROOT_DIR/skills/audible-download-convert/SKILL.md"
+AUDIBLE_DOWNLOAD="$ROOT_DIR/skills/audible-download-convert/scripts/download_and_convert.sh"
+AUDIBLE_CONVERT="$ROOT_DIR/skills/audible-download-convert/scripts/convert_aax_to_m4b.sh"
+AUDIBLE_PROJECT="$ROOT_DIR/skills/audible-download-convert/pyproject.toml"
+AUDIBLE_LOCK="$ROOT_DIR/skills/audible-download-convert/uv.lock"
 
 fail() {
   echo "FAIL: $*" >&2
@@ -111,5 +116,29 @@ while IFS= read -r match; do
     fail "localhost is only allowed in the STORYTELLER_API_BASE default expansion: $match"
   fi
 done < <(grep -Hn 'localhost' "$STORYTELLER_SKILL" "$STORYTELLER_WORKFLOWS" || true)
+
+for required_file in \
+  "$AUDIBLE_SKILL" \
+  "$AUDIBLE_DOWNLOAD" \
+  "$AUDIBLE_CONVERT" \
+  "$AUDIBLE_PROJECT" \
+  "$AUDIBLE_LOCK"; do
+  [[ -f "$required_file" ]] || fail "required file does not exist: $required_file"
+done
+
+assert_frontmatter_contract "$AUDIBLE_SKILL" '[bash, uv, ffmpeg, ffprobe, jq]'
+assert_contains "$AUDIBLE_SKILL" \
+  'AUDIBLE_DATA_DIR="${AUDIBLE_DATA_DIR:-$REPO_ROOT/audible_data}"'
+assert_contains "$AUDIBLE_DOWNLOAD" 'SKILL_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"'
+assert_contains "$AUDIBLE_DOWNLOAD" 'REPO_ROOT="$(cd "$SKILL_DIR/../.." && pwd)"'
+assert_contains "$AUDIBLE_DOWNLOAD" \
+  'download_cmd=(uv run --project "$SKILL_DIR" --frozen audible)'
+assert_contains "$AUDIBLE_DOWNLOAD" \
+  'CONVERT_CMD="$SCRIPT_DIR/convert_aax_to_m4b.sh"'
+assert_contains "$AUDIBLE_PROJECT" 'audible-cli==0.3.3'
+assert_no_literal '/path/to/audible' \
+  "$AUDIBLE_SKILL" "$AUDIBLE_DOWNLOAD" "$AUDIBLE_CONVERT"
+assert_no_literal '../audible' \
+  "$AUDIBLE_SKILL" "$AUDIBLE_DOWNLOAD" "$AUDIBLE_CONVERT"
 
 echo "skill runtime contracts: ok"
