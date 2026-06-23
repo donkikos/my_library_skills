@@ -42,9 +42,14 @@ is_valid_asin() {
   [[ "$1" =~ ^[A-Z0-9]{10}$ ]]
 }
 
+has_control_chars() {
+  local LC_ALL=C
+
+  [[ "$1" =~ [[:cntrl:]] ]]
+}
+
 is_valid_book_folder() {
   local folder="$1"
-  local LC_ALL=C
 
   [[ -n "$folder" ]] || return 1
   [[ "$folder" != "." && "$folder" != ".." ]] || return 1
@@ -53,7 +58,7 @@ is_valid_book_folder() {
       return 1
       ;;
   esac
-  [[ ! "$folder" =~ [[:cntrl:]] ]]
+  ! has_control_chars "$folder"
 }
 
 ensure_audit_header() {
@@ -182,10 +187,16 @@ if [[ -n "$AUDIT_FILE" ]]; then
 fi
 
 process_one() {
-  local asin folder book_dir out_dir out_file created_dir
+  local asin raw_folder folder book_dir out_dir out_file created_dir
   local -a download_cmd
   asin="$(trim_ws "$1")"
-  folder="$(trim_ws "$2")"
+  raw_folder="$2"
+  if has_control_chars "$raw_folder"; then
+    printf "Invalid book folder '%q'. Expected a single folder name without path separators, dot components, or control characters.\n" \
+      "$raw_folder" >&2
+    return 1
+  fi
+  folder="$(trim_ws "$raw_folder")"
   asin="$(printf '%s' "$asin" | tr '[:lower:]' '[:upper:]')"
 
   if [[ -z "$asin" || -z "$folder" ]]; then

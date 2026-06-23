@@ -80,6 +80,15 @@ assert_invalid_book_folder "dot-dot" ".."
 assert_invalid_book_folder "newline" $'Author\nBook'
 assert_invalid_book_folder "tab" $'Author\tBook'
 
+CONTROL_NAMES=("newline" "tab" "carriage-return" "vertical-tab" "form-feed")
+CONTROL_VALUES=($'\n' $'\t' $'\r' $'\v' $'\f')
+for control_index in "${!CONTROL_NAMES[@]}"; do
+  control_name="${CONTROL_NAMES[$control_index]}"
+  control_value="${CONTROL_VALUES[$control_index]}"
+  assert_invalid_book_folder "leading-$control_name" "${control_value}Author"
+  assert_invalid_book_folder "trailing-$control_name" "Author${control_value}"
+done
+
 MANIFEST="$TMP_DIR/unsafe.tsv"
 printf 'B07D9RHRH5\t../manifest-outside\n' >"$MANIFEST"
 if PATH="$FAKE_BIN:/usr/bin:/bin" \
