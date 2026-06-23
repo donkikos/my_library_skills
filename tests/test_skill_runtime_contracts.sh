@@ -22,6 +22,16 @@ assert_contains() {
     fail "$file does not contain: $expected"
 }
 
+assert_max_words() {
+  local file="$1"
+  local maximum="$2"
+  local actual
+  actual="$(wc -w < "$file" | tr -d ' ')"
+
+  [ "$actual" -le "$maximum" ] ||
+    fail "$file has $actual words; maximum is $maximum"
+}
+
 frontmatter() {
   local file="$1"
 
@@ -91,14 +101,21 @@ assert_contains "$STORYTELLER_WORKFLOWS" \
   '"${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}"'
 assert_contains "$STORYTELLER_WORKFLOWS" \
   'TOKEN_FILE="${STORYTELLER_TOKEN_FILE:-$HOME/.config/storyteller-skill/.storyteller_token}"'
+assert_contains "$STORYTELLER_WORKFLOWS" 'umask 077'
 assert_contains "$STORYTELLER_WORKFLOWS" 'mkdir -p "$(dirname "$TOKEN_FILE")"'
+assert_contains "$STORYTELLER_WORKFLOWS" 'chmod 700 "$(dirname "$TOKEN_FILE")"'
+assert_contains "$STORYTELLER_WORKFLOWS" \
+  'TEMP_FILE="$(mktemp "$(dirname "$TOKEN_FILE")/.token.tmp.XXXXXX")"'
 assert_contains "$STORYTELLER_WORKFLOWS" 'curl -fsS'
 assert_contains "$STORYTELLER_WORKFLOWS" "jq -r '.access_token // empty'"
 assert_contains "$STORYTELLER_WORKFLOWS" '[ -n "$TOKEN" ]'
-assert_contains "$STORYTELLER_WORKFLOWS" "printf '%s\\n' \"\$TOKEN\" > \"\$TOKEN_FILE\""
+assert_contains "$STORYTELLER_WORKFLOWS" "printf '%s\\n' \"\$TOKEN\" > \"\$TEMP_FILE\""
+assert_contains "$STORYTELLER_WORKFLOWS" 'mv -f "$TEMP_FILE" "$TOKEN_FILE"'
 assert_contains "$STORYTELLER_WORKFLOWS" 'chmod 600 "$TOKEN_FILE"'
 assert_contains "$STORYTELLER_SKILL" 'network'
 assert_contains "$STORYTELLER_WORKFLOWS" 'network'
+assert_max_words "$STORYTELLER_SKILL" 300
+assert_max_words "$STORYTELLER_WORKFLOWS" 400
 assert_no_literal '"$STORYTELLER_API_BASE' "$STORYTELLER_WORKFLOWS"
 assert_no_literal '"$STORYTELLER_TOKEN_FILE"' "$STORYTELLER_WORKFLOWS"
 
