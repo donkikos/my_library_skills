@@ -96,6 +96,13 @@ chmod 600 "$AUDIBLE_AUTHCODE_FILE"
    `<Book Folder>.chapters.txt` under
    `$AUDIBLE_DATA_DIR/aax_converted/<Book Folder>`.
 
+## Latest Purchase Shortcut
+
+For “latest/newest Audible purchase”, export the library JSON with the locked
+CLI, select max `purchase_date` (fallback `date_added`), then feed that ASIN to
+the normal helper. Do not ask for an ASIN first. Verify the final `.m4b` with
+`stat` and `ffprobe`; “No PDF found” is non-fatal.
+
 ## Commands
 
 Run the helper from the repository root.

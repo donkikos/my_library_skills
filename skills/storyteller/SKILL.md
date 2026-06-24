@@ -36,13 +36,24 @@ Credential refresh overwrites the configured token file and persists it securely
 
 ## Workflow
 
-1. Check health, then list books and identify UUIDs.
-2. Upload the EPUB and M4B together using one shared book UUID.
-3. Correct title or series metadata.
-4. Queue alignment.
-5. Monitor the book status or event stream.
+Use the scripts end-to-end: list/check existing books, upload paired EPUB+M4B with one UUID, update metadata only while idle, queue/cancel alignment, then monitor status/events. Do not edit while `PROCESSING` or `QUEUED`; cancel, edit, then restart if needed.
 
-Do not edit metadata while alignment is `PROCESSING` or `QUEUED`. If an edit is required, cancel processing, edit metadata, then restart alignment.
+## EPUB3 / Readaloud from Existing EPUB + M4B
+
+For “create EPUB3” from a matched ebook/audiobook pair, use Storyteller (not
+Calibre conversion). Resolve EPUB and M4B paths, check for an existing matching
+title, then use the scripts so auth refresh and TUS upload are handled:
+
+```bash
+scripts/upload_epub_m4b.sh "/path/book.epub" "/path/book.m4b"   # note BOOK_UUID
+scripts/queue_alignment.sh "$BOOK_UUID"
+scripts/list_books.sh --json | jq -r --arg id "$BOOK_UUID" \
+  '.[]|select(.uuid==$id)|[.title,.ebook.isEpub2,.readaloud.status,.readaloud.currentStage,.readaloud.stageProgress,.readaloud.filepath]|@tsv'
+```
+
+`ALIGNED` means the EPUB3/readaloud file is ready at `readaloud.filepath`.
+`TRANSCRIBE_CHAPTERS` can be long; `stageProgress` is fractional and may
+fluctuate, so poll periodically or run a background monitor.
 
 ## Diagnosis
 

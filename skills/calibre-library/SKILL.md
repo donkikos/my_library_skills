@@ -1,6 +1,6 @@
 ---
 name: calibre-library
-description: Use Calibre CLI and Content Server workflows to diagnose library counts, reconcile missing series metadata, and safely update series/tags with lock-aware fallback between REST and local calibredb.
+description: Use Calibre CLI and Content Server workflows to find titles/formats/paths, diagnose library counts, reconcile missing series metadata, and safely update series/tags with lock-aware fallback between REST and local calibredb.
 platforms: [linux, macos]
 prerequisites:
   commands: [calibredb, sqlite3, curl, jq]
@@ -8,7 +8,7 @@ prerequisites:
 
 # Calibre Library Skill
 
-Use this skill when you need reliable Calibre library diagnostics or metadata updates via `calibredb`, `sqlite3`, and the Calibre Content Server API.
+Use this skill when you need reliable Calibre title/format/path lookup, library diagnostics, or metadata updates via `calibredb`, `sqlite3`, and the Content Server API.
 
 ## Runtime setup
 
@@ -49,6 +49,10 @@ Use this sequence for every task:
    - Remove `_sort_` only; preserve all other tags.
 6. Verify final state
    - Re-run mismatch query and final expected count query.
+
+## Quick Title / Format Lookup
+
+For a specific title, use `calibredb search --library-path "$CALIBRE_LIBRARY_PATH" 'title:"..."'` for IDs. Use SQLite only for exact/partial duplicate checks and formats (`books` + `authors` + `data`). EPUBs usually live at `$CALIBRE_LIBRARY_PATH/<Author>/<Title> (<id>)/*.epub`; verify with file search or `stat` before using outside Calibre.
 
 ## Source of Truth and Tool Priority
 
