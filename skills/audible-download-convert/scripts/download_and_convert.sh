@@ -267,7 +267,9 @@ process_one() {
   fi
 
   created_dir=0
-  mkdir -p "$source_root"
+  # The converter requires both roots to exist. Create the configured target root
+  # before validating its per-book child so a first download can complete.
+  mkdir -p "$source_root" "$target_root"
   validate_direct_child "$source_root" "$book_dir" || return 1
   validate_direct_child "$target_root" "$out_dir" || return 1
   if [[ ! -d "$book_dir" ]]; then
