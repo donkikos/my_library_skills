@@ -28,13 +28,14 @@ def convert_file(source_path: Path) -> str:
     properties = [
         f"page-type:: {PAGE_TYPE}",
         f"icon:: {BOOK_ICON}",
-        f"author:: [[{author}]]",
+        f"book-author:: [[{author}]]",
         "tags:: #book",
-        "source:: #Highlighted",
         f"isbn:: {isbn}",
-        f"title:: {title}",
+        f"book-title:: {title}",
     ]
-    return "\n".join(properties + [""] + _render_highlights(highlights)) + "\n"
+    highlight_lines = ["- #Highlights #Highlighted"]
+    highlight_lines.extend(f"  {line}" for line in _render_highlights(highlights))
+    return "\n".join(properties + [""] + highlight_lines) + "\n"
 
 
 def _parse_header(lines: list[str], source_path: Path) -> tuple[str, str, str, int]:

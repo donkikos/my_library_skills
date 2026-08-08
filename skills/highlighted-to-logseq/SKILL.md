@@ -35,10 +35,13 @@ through symlinks and hard links.
 ## Output Format
 
 - Page properties: `page-type:: [[Template/Book]]`, `icon:: 📖`, linked
-  `author::`, `tags:: #book`, `source:: #Highlighted`, `isbn::`, and `title::`.
-- Each highlight becomes one Logseq block quote. Prefix every content line
-  with `>`, including blank paragraph lines, and preserve its leading and
-  trailing whitespace.
+  `book-author::`, `tags:: #book`, `isbn::`, and plain-text `book-title::`.
+  Do not emit Logseq's special `title::` property or a page-level source
+  property.
+- Put all imported highlights beneath one `#Highlights #Highlighted` block so
+  those tags describe only the imported subtree. Each highlight becomes one
+  nested Logseq block quote. Prefix every content line with `>`, including
+  blank paragraph lines, and preserve its leading and trailing whitespace.
 - Preserve bold that spans quote paragraphs by escaping ordered-list markers
   only when they would otherwise interrupt an open `**` span, and move any
   whitespace immediately before its closing `**` after the delimiter. These

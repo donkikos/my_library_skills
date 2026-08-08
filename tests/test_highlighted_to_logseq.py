@@ -38,25 +38,25 @@ SOURCE = (
 )
 
 EXPECTED_HIGHLIGHTS = (
-    "- tags:: #Quotes, #[[Scientific Papers]]\n"
-    "  > First paragraph.  \n"
-    "  >\n"
-    "  >   Second paragraph.\n"
-    "  - Note: Verify attribution\n"
-    "  - p. 12\n"
-    "- > Note: this sentence is quote content.\n"
-    "  > p. 9 is also quote content.\n"
-    "  > # this is also quote content.\n"
+    "- #Highlights #Highlighted\n"
+    "  - tags:: #Quotes, #[[Scientific Papers]]\n"
+    "    > First paragraph.  \n"
+    "    >\n"
+    "    >   Second paragraph.\n"
+    "    - Note: Verify attribution\n"
+    "    - p. 12\n"
+    "  - > Note: this sentence is quote content.\n"
+    "    > p. 9 is also quote content.\n"
+    "    > # this is also quote content.\n"
 )
 
 EXPECTED_OUTPUT = (
     "page-type:: [[Template/Book]]\n"
     "icon:: 📖\n"
-    "author:: [[Example Author]]\n"
+    "book-author:: [[Example Author]]\n"
     "tags:: #book\n"
-    "source:: #Highlighted\n"
     "isbn:: 9780000000000\n"
-    "title:: Example Book\n\n"
+    "book-title:: Example Book\n\n"
     + EXPECTED_HIGHLIGHTS
 )
 
@@ -143,16 +143,16 @@ class HighlightedToLogseqTest(unittest.TestCase):
             output,
             "page-type:: [[Template/Book]]\n"
             "icon:: 📖\n"
-            "author:: [[Example Author]]\n"
+            "book-author:: [[Example Author]]\n"
             "tags:: #book\n"
-            "source:: #Highlighted\n"
             "isbn:: 9780000000000\n"
-            "title:: Example Book\n\n"
-            "- tags:: #Quotes\n"
-            "  > First paragraph\n"
-            "  >   \n"
-            "  > Second paragraph\n"
-            "- > Next highlight\n",
+            "book-title:: Example Book\n\n"
+            "- #Highlights #Highlighted\n"
+            "  - tags:: #Quotes\n"
+            "    > First paragraph\n"
+            "    >   \n"
+            "    > Second paragraph\n"
+            "  - > Next highlight\n",
         )
 
     def test_converter_preserves_spanning_bold_around_numbered_citations(self) -> None:
@@ -179,18 +179,18 @@ class HighlightedToLogseqTest(unittest.TestCase):
             output,
             "page-type:: [[Template/Book]]\n"
             "icon:: 📖\n"
-            "author:: [[Example Author]]\n"
+            "book-author:: [[Example Author]]\n"
             "tags:: #book\n"
-            "source:: #Highlighted\n"
             "isbn:: 9780000000000\n"
-            "title:: Example Book\n\n"
-            "- tags:: #[[Scientific Papers]]\n"
-            "  > **Highlighted claim [153].\n"
-            "  >\n"
-            "  > 153\\. First citation.\n"
-            "  > 154\\. Second citation.**  \n"
-            "- tags:: #Lists\n"
-            "  > 1. Real list item.\n",
+            "book-title:: Example Book\n\n"
+            "- #Highlights #Highlighted\n"
+            "  - tags:: #[[Scientific Papers]]\n"
+            "    > **Highlighted claim [153].\n"
+            "    >\n"
+            "    > 153\\. First citation.\n"
+            "    > 154\\. Second citation.**  \n"
+            "  - tags:: #Lists\n"
+            "    > 1. Real list item.\n",
         )
 
     def test_converter_keeps_first_note_line_as_quote_content(self) -> None:
@@ -213,13 +213,13 @@ class HighlightedToLogseqTest(unittest.TestCase):
             output,
             "page-type:: [[Template/Book]]\n"
             "icon:: 📖\n"
-            "author:: [[Example Author]]\n"
+            "book-author:: [[Example Author]]\n"
             "tags:: #book\n"
-            "source:: #Highlighted\n"
             "isbn:: 9780000000000\n"
-            "title:: Example Book\n\n"
-            "- > Note: quoted text\n"
-            "  - p. 7\n",
+            "book-title:: Example Book\n\n"
+            "- #Highlights #Highlighted\n"
+            "  - > Note: quoted text\n"
+            "    - p. 7\n",
         )
 
     def test_parser_preserves_interleaved_metadata_order(self) -> None:
