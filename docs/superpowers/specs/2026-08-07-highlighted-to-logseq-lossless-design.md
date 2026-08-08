@@ -13,20 +13,32 @@ Emit these page properties before the highlights:
 ```md
 page-type:: [[Template/Book]]
 icon:: 📖
-author:: [[Author Name]]
+book-author:: [[Author Name]]
 tags:: #book
-source:: #Highlighted
 isbn:: 9780000000000
-title:: Book Title
+book-title:: Book Title
 ```
 
-Keep each source highlight in one Logseq block. Prefix every content line with
-`>`, including empty lines between paragraphs:
+Use the custom `book-title` and `book-author` properties instead of Logseq's
+special `title` property and the generic `author` property. This prevents
+imported metadata from renaming the page or its file and scopes both fields to
+books. Keep the title as plain text rather than creating a second page
+reference; keep the author as a page reference.
+
+Place all imported highlights beneath one `#Highlights #Highlighted` block.
+The two tags identify both the subtree's role and its source without labeling
+the entire book page as imported content. Keep each source highlight in one
+child block and prefix every content line with `>`, including empty lines
+between paragraphs:
 
 ```md
-- > First paragraph.
-  >
-  > Second paragraph.
+- #Highlights #Highlighted
+  - tags:: #Quotes
+    > First paragraph.
+    >
+    > Second paragraph.
+    - Note: Source annotation
+  - > Another highlight.
 ```
 
 Do not strip leading or trailing whitespace from highlight content. Discard
@@ -54,9 +66,9 @@ from the quote by one or more empty lines. In that trailing section:
 
 This boundary-aware rule keeps metadata-like text inside a quote when it is
 not separated into the trailing metadata section. Preserve metadata order in
-the internal representation, while rendering source tags as the parent
-`tags::` block and notes/page markers as child blocks, matching the existing
-Logseq example.
+the internal representation, while rendering source tags as the highlight's
+`tags::` block and notes/page markers as its child blocks. Nest every rendered
+highlight one level below the shared `#Highlights #Highlighted` block.
 
 Require at least one highlight. Reject an export that has a valid header but
 no recognized highlight rather than producing a misleading metadata-only
@@ -77,8 +89,9 @@ directories.
 Use deterministic standard-library `unittest` cases with hand-written exact
 expected output. Cover:
 
-- all page properties, including `source:: #Highlighted`;
-- multiple highlights;
+- all page properties, including plain-text `book-title::` and linked
+  `book-author::`, while excluding `title::`, `author::`, and `source::`;
+- multiple highlights nested beneath one `#Highlights #Highlighted` block;
 - blank quoted lines between paragraphs;
 - numbered citation lines inside multi-paragraph bold text, without changing
   genuine numbered lists;
