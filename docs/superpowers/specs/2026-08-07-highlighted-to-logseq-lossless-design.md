@@ -13,10 +13,10 @@ Emit these page properties before the highlights:
 ```md
 page-type:: [[Template/Book]]
 icon:: 📖
+book-title:: Book Title
 book-author:: [[Author Name]]
 tags:: #book
 isbn:: 9780000000000
-book-title:: Book Title
 ```
 
 Use the custom `book-title` and `book-author` properties instead of Logseq's
