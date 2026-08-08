@@ -28,10 +28,10 @@ def convert_file(source_path: Path) -> str:
     properties = [
         f"page-type:: {PAGE_TYPE}",
         f"icon:: {BOOK_ICON}",
+        f"book-title:: {title}",
         f"book-author:: [[{author}]]",
         "tags:: #book",
         f"isbn:: {isbn}",
-        f"book-title:: {title}",
     ]
     highlight_lines = ["- #Highlights #Highlighted"]
     highlight_lines.extend(f"  {line}" for line in _render_highlights(highlights))

@@ -34,8 +34,8 @@ through symlinks and hard links.
 
 ## Output Format
 
-- Page properties: `page-type:: [[Template/Book]]`, `icon:: 📖`, linked
-  `book-author::`, `tags:: #book`, `isbn::`, and plain-text `book-title::`.
+- Page properties: `page-type:: [[Template/Book]]`, `icon:: 📖`, plain-text
+  `book-title::`, linked `book-author::`, `tags:: #book`, and `isbn::`.
   Do not emit Logseq's special `title::` property or a page-level source
   property.
 - Put all imported highlights beneath one `#Highlights #Highlighted` block so

@@ -53,10 +53,10 @@ EXPECTED_HIGHLIGHTS = (
 EXPECTED_OUTPUT = (
     "page-type:: [[Template/Book]]\n"
     "icon:: 📖\n"
+    "book-title:: Example Book\n"
     "book-author:: [[Example Author]]\n"
     "tags:: #book\n"
-    "isbn:: 9780000000000\n"
-    "book-title:: Example Book\n\n"
+    "isbn:: 9780000000000\n\n"
     + EXPECTED_HIGHLIGHTS
 )
 
@@ -143,10 +143,10 @@ class HighlightedToLogseqTest(unittest.TestCase):
             output,
             "page-type:: [[Template/Book]]\n"
             "icon:: 📖\n"
+            "book-title:: Example Book\n"
             "book-author:: [[Example Author]]\n"
             "tags:: #book\n"
-            "isbn:: 9780000000000\n"
-            "book-title:: Example Book\n\n"
+            "isbn:: 9780000000000\n\n"
             "- #Highlights #Highlighted\n"
             "  - tags:: #Quotes\n"
             "    > First paragraph\n"
@@ -179,10 +179,10 @@ class HighlightedToLogseqTest(unittest.TestCase):
             output,
             "page-type:: [[Template/Book]]\n"
             "icon:: 📖\n"
+            "book-title:: Example Book\n"
             "book-author:: [[Example Author]]\n"
             "tags:: #book\n"
-            "isbn:: 9780000000000\n"
-            "book-title:: Example Book\n\n"
+            "isbn:: 9780000000000\n\n"
             "- #Highlights #Highlighted\n"
             "  - tags:: #[[Scientific Papers]]\n"
             "    > **Highlighted claim [153].\n"
@@ -213,10 +213,10 @@ class HighlightedToLogseqTest(unittest.TestCase):
             output,
             "page-type:: [[Template/Book]]\n"
             "icon:: 📖\n"
+            "book-title:: Example Book\n"
             "book-author:: [[Example Author]]\n"
             "tags:: #book\n"
-            "isbn:: 9780000000000\n"
-            "book-title:: Example Book\n\n"
+            "isbn:: 9780000000000\n\n"
             "- #Highlights #Highlighted\n"
             "  - > Note: quoted text\n"
             "    - p. 7\n",
