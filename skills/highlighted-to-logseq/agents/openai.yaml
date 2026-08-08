@@ -1,0 +1,4 @@
+interface:
+  display_name: "Highlighted to Logseq"
+  short_description: "Convert Highlighted exports to Logseq pages"
+  default_prompt: "Use $highlighted-to-logseq to convert this Highlighted export into a Logseq book page."
