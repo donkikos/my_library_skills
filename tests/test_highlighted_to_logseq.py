@@ -219,13 +219,28 @@ class HighlightedToLogseqTest(unittest.TestCase):
         converter = load_converter()
         cases = [
             ["**One paragraph.**"],
+            ["***First paragraph.", "", "1. Second paragraph.***"],
             ["**First paragraph.", "", "Second with **inline** bold.**"],
+            ["**First paragraph.", "", r"Second \\**inline\\** bold.**"],
             ["**First paragraph.", "", "Unclosed second paragraph."],
         ]
 
         for lines in cases:
             with self.subTest(lines=lines):
                 self.assertEqual(converter._normalize_multiparagraph_bold(lines), lines)
+
+    def test_renderer_does_not_treat_triple_emphasis_as_outer_bold(self) -> None:
+        """It does not escape list syntax inside ambiguous triple emphasis."""
+        converter = load_converter()
+
+        rendered = converter._render_quote_lines(
+            ["***First paragraph.", "", "1. Second paragraph.***"]
+        )
+
+        self.assertEqual(
+            rendered,
+            ["> ***First paragraph.", ">", "> 1. Second paragraph.***"],
+        )
 
     def test_converter_keeps_first_note_line_as_quote_content(self) -> None:
         """It recognizes separated metadata after a metadata-like first line."""
@@ -350,6 +365,19 @@ class HighlightedToLogseqTest(unittest.TestCase):
                 converter.main([str(source), str(output)])
 
             self.assertEqual(output.read_text(encoding="utf-8"), sentinel)
+
+    def test_main_does_not_create_output_directory_for_invalid_input(self) -> None:
+        """It validates the source before creating destination directories."""
+        converter = load_converter()
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "input.md"
+            output = Path(directory) / "missing" / "output.md"
+            source.write_text("not a Highlighted export\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "Unexpected Highlighted header"):
+                converter.main([str(source), str(output)])
+
+            self.assertFalse(output.parent.exists())
 
 
 if __name__ == "__main__":

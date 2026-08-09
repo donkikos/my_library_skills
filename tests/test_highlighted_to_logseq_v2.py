@@ -127,13 +127,28 @@ class HighlightedToLogseqV2Test(unittest.TestCase):
         converter = load_converter()
         cases = [
             ["**One paragraph.**"],
+            ["***First paragraph.", "", "1. Second paragraph.***"],
             ["**First paragraph.", "", "Second with **inline** bold.**"],
+            ["**First paragraph.", "", r"Second \\**inline\\** bold.**"],
             ["**First paragraph.", "", "Unclosed second paragraph."],
         ]
 
         for lines in cases:
             with self.subTest(lines=lines):
                 self.assertEqual(converter._normalize_multiparagraph_bold(lines), lines)
+
+    def test_renderer_does_not_treat_triple_emphasis_as_outer_bold(self) -> None:
+        """It does not escape list syntax inside ambiguous triple emphasis."""
+        converter = load_converter()
+
+        rendered = converter._render_quote_lines(
+            ["***First paragraph.", "", "1. Second paragraph.***"]
+        )
+
+        self.assertEqual(
+            rendered,
+            ["> ***First paragraph.", ">", "> 1. Second paragraph.***"],
+        )
 
     def test_converter_rejects_v1_header(self) -> None:
         """It does not silently reinterpret a legacy export as v2."""

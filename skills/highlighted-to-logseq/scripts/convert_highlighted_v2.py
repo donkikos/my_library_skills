@@ -168,6 +168,25 @@ def _render_highlights(highlights: list[Highlight]) -> list[str]:
     return rendered
 
 
+def _strong_delimiter_positions(line: str) -> list[int]:
+    """Return unescaped exact-two-star delimiter positions in one line."""
+    positions: list[int] = []
+    for match in re.finditer(r"\*\*", line):
+        start, end = match.span()
+        if (start > 0 and line[start - 1] == "*") or (
+            end < len(line) and line[end] == "*"
+        ):
+            continue
+        backslashes = 0
+        index = start - 1
+        while index >= 0 and line[index] == "\\":
+            backslashes += 1
+            index -= 1
+        if backslashes % 2 == 0:
+            positions.append(start)
+    return positions
+
+
 def _normalize_multiparagraph_bold(lines: list[str]) -> list[str]:
     """Replace one outer multiparagraph bold span with paragraph spans."""
     nonblank = [index for index, line in enumerate(lines) if line.strip()]
@@ -176,28 +195,29 @@ def _normalize_multiparagraph_bold(lines: list[str]) -> list[str]:
     first_index, last_index = nonblank[0], nonblank[-1]
     if not any(_is_separator_line(line) for line in lines[first_index:last_index]):
         return lines
-    if sum(len(re.findall(r"(?<!\\)\*\*", line)) for line in lines) != 2:
-        return lines
-
-    opening = re.match(r"^([ \t]*)\*\*", lines[first_index])
-    closing = re.search(r"\*\*([ \t]*)$", lines[last_index])
-    if opening is None or closing is None:
+    delimiters = [
+        (line_index, position)
+        for line_index, line in enumerate(lines)
+        for position in _strong_delimiter_positions(line)
+    ]
+    opening_position = len(lines[first_index]) - len(
+        lines[first_index].lstrip(" \t")
+    )
+    closing_position = len(lines[last_index].rstrip(" \t")) - 2
+    if delimiters != [
+        (first_index, opening_position),
+        (last_index, closing_position),
+    ]:
         return lines
 
     normalized = lines.copy()
     normalized[first_index] = (
-        normalized[first_index][: opening.start()]
-        + opening.group(1)
-        + normalized[first_index][opening.end() :]
+        normalized[first_index][:opening_position]
+        + normalized[first_index][opening_position + 2 :]
     )
-    closing = re.search(r"\*\*([ \t]*)$", normalized[last_index])
-    if closing is None:
-        return lines
-    normalized[last_index] = (
-        normalized[last_index][: closing.start()]
-        + closing.group(1)
-        + normalized[last_index][closing.end() :]
-    )
+    normalized[last_index] = normalized[last_index][:closing_position] + normalized[
+        last_index
+    ][closing_position + 2 :]
 
     paragraph_start: int | None = None
     for index in range(first_index, last_index + 2):
@@ -236,7 +256,7 @@ def _render_quote_lines(lines: list[str]) -> list[str]:
                 protected_line,
             )
         rendered.append(_render_quote_line(protected_line))
-        if len(re.findall(r"(?<!\\)\*\*", line)) % 2:
+        if len(_strong_delimiter_positions(line)) % 2:
             strong_open = not strong_open
     return rendered
 
