@@ -47,9 +47,9 @@ EXPECTED_OUTPUT = (
     "book-author:: [[Example Author]]\n"
     "tags:: #book\n"
     "isbn:: 9780000000000\n\n"
-    "- #Highlighted #Highlights\n"
-    "  reading-status:: Reading\n"
+    "- reading-status:: Reading\n"
     "  added-to-library:: 2025-12-03\n"
+    "  #Highlighted #Highlights\n"
     "  - tags:: #Quotes, #[[Scientific Papers]]\n"
     "    > First paragraph.  \n"
     "    >\n"
@@ -74,8 +74,10 @@ class HighlightedToLogseqV2Test(unittest.TestCase):
 
         self.assertEqual(output, EXPECTED_OUTPUT)
 
-    def test_converter_preserves_spanning_bold_around_numbered_citations(self) -> None:
-        """It keeps numbered citations inside a valid spanning bold run."""
+    def test_converter_normalizes_multiparagraph_bold_around_citations(
+        self,
+    ) -> None:
+        """It gives each favorite paragraph its own valid bold span."""
         converter = load_converter()
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "input.md"
@@ -96,9 +98,42 @@ class HighlightedToLogseqV2Test(unittest.TestCase):
 
             output = converter.convert_file(source)
 
-        self.assertIn("    > 153\\. First citation.\n", output)
+        self.assertIn("    > **Highlighted claim [153].**\n", output)
+        self.assertIn("    > **153. First citation.\n", output)
         self.assertIn("    > 154\\. Second citation.**  \n", output)
         self.assertIn("  - tags:: #[[Scientific Papers]]\n", output)
+
+    def test_normalizer_preserves_whitespace_only_separators(self) -> None:
+        """It changes bold boundaries without dropping source whitespace."""
+        converter = load_converter()
+
+        normalized = converter._normalize_multiparagraph_bold(
+            ["  **First line", "continues.  ", "", "  ", "Second paragraph.**  "]
+        )
+
+        self.assertEqual(
+            normalized,
+            [
+                "  **First line",
+                "continues.**  ",
+                "",
+                "  ",
+                "**Second paragraph.**  ",
+            ],
+        )
+
+    def test_normalizer_leaves_nonmatching_bold_unchanged(self) -> None:
+        """It does not reinterpret single, internal, or unbalanced bold."""
+        converter = load_converter()
+        cases = [
+            ["**One paragraph.**"],
+            ["**First paragraph.", "", "Second with **inline** bold.**"],
+            ["**First paragraph.", "", "Unclosed second paragraph."],
+        ]
+
+        for lines in cases:
+            with self.subTest(lines=lines):
+                self.assertEqual(converter._normalize_multiparagraph_bold(lines), lines)
 
     def test_converter_rejects_v1_header(self) -> None:
         """It does not silently reinterpret a legacy export as v2."""
