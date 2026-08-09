@@ -155,8 +155,10 @@ class HighlightedToLogseqTest(unittest.TestCase):
             "  - > Next highlight\n",
         )
 
-    def test_converter_preserves_spanning_bold_around_numbered_citations(self) -> None:
-        """It keeps numbered citations inside a valid spanning bold run."""
+    def test_converter_normalizes_multiparagraph_bold_around_citations(
+        self,
+    ) -> None:
+        """It gives each favorite paragraph its own valid bold span."""
         converter = load_converter()
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "input.md"
@@ -185,13 +187,45 @@ class HighlightedToLogseqTest(unittest.TestCase):
             "isbn:: 9780000000000\n\n"
             "- #Highlights #Highlighted\n"
             "  - tags:: #[[Scientific Papers]]\n"
-            "    > **Highlighted claim [153].\n"
+            "    > **Highlighted claim [153].**\n"
             "    >\n"
-            "    > 153\\. First citation.\n"
+            "    > **153. First citation.\n"
             "    > 154\\. Second citation.**  \n"
             "  - tags:: #Lists\n"
             "    > 1. Real list item.\n",
         )
+
+    def test_normalizer_preserves_whitespace_only_separators(self) -> None:
+        """It changes bold boundaries without dropping source whitespace."""
+        converter = load_converter()
+
+        normalized = converter._normalize_multiparagraph_bold(
+            ["  **First line", "continues.  ", "", "  ", "Second paragraph.**  "]
+        )
+
+        self.assertEqual(
+            normalized,
+            [
+                "  **First line",
+                "continues.**  ",
+                "",
+                "  ",
+                "**Second paragraph.**  ",
+            ],
+        )
+
+    def test_normalizer_leaves_nonmatching_bold_unchanged(self) -> None:
+        """It does not reinterpret single, internal, or unbalanced bold."""
+        converter = load_converter()
+        cases = [
+            ["**One paragraph.**"],
+            ["**First paragraph.", "", "Second with **inline** bold.**"],
+            ["**First paragraph.", "", "Unclosed second paragraph."],
+        ]
+
+        for lines in cases:
+            with self.subTest(lines=lines):
+                self.assertEqual(converter._normalize_multiparagraph_bold(lines), lines)
 
     def test_converter_keeps_first_note_line_as_quote_content(self) -> None:
         """It recognizes separated metadata after a metadata-like first line."""

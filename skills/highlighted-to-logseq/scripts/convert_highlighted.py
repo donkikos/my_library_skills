@@ -173,8 +173,58 @@ def _render_highlights(highlights: list[Highlight]) -> list[str]:
     return rendered
 
 
+def _normalize_multiparagraph_bold(lines: list[str]) -> list[str]:
+    """Replace one outer multiparagraph bold span with paragraph spans."""
+    nonblank = [index for index, line in enumerate(lines) if line.strip()]
+    if len(nonblank) < 2:
+        return lines
+    first_index, last_index = nonblank[0], nonblank[-1]
+    if not any(_is_separator_line(line) for line in lines[first_index:last_index]):
+        return lines
+    if sum(len(re.findall(r"(?<!\\)\*\*", line)) for line in lines) != 2:
+        return lines
+
+    opening = re.match(r"^([ \t]*)\*\*", lines[first_index])
+    closing = re.search(r"\*\*([ \t]*)$", lines[last_index])
+    if opening is None or closing is None:
+        return lines
+
+    normalized = lines.copy()
+    normalized[first_index] = (
+        normalized[first_index][: opening.start()]
+        + opening.group(1)
+        + normalized[first_index][opening.end() :]
+    )
+    closing = re.search(r"\*\*([ \t]*)$", normalized[last_index])
+    if closing is None:
+        return lines
+    normalized[last_index] = (
+        normalized[last_index][: closing.start()]
+        + closing.group(1)
+        + normalized[last_index][closing.end() :]
+    )
+
+    paragraph_start: int | None = None
+    for index in range(first_index, last_index + 2):
+        at_separator = index > last_index or _is_separator_line(normalized[index])
+        if paragraph_start is None and not at_separator:
+            paragraph_start = index
+        if paragraph_start is None or not at_separator:
+            continue
+        paragraph_end = index - 1
+        normalized[paragraph_start] = re.sub(
+            r"^([ \t]*)", r"\1**", normalized[paragraph_start], count=1
+        )
+        normalized[paragraph_end] = re.sub(
+            r"([ \t]*)$", r"**\1", normalized[paragraph_end], count=1
+        )
+        paragraph_start = None
+    return normalized
+
+
 def _render_quote_lines(lines: list[str]) -> list[str]:
     """Render quote lines without letting list syntax interrupt bold spans."""
+    lines = _normalize_multiparagraph_bold(lines)
     rendered: list[str] = []
     strong_open = False
     for line in lines:
