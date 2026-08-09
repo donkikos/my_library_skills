@@ -38,7 +38,7 @@ def convert_file(source_path: Path) -> str:
     ]
     import_lines = [
         f"- reading-status:: {reading_status}",
-        f"  added-to-library:: {added_to_library}",
+        f"  added-to-library:: [[{added_to_library}]]",
         "  #Highlighted #Highlights",
     ]
     import_lines.extend(f"  {line}" for line in _render_highlights(highlights))

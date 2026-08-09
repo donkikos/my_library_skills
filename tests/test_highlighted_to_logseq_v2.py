@@ -48,7 +48,7 @@ EXPECTED_OUTPUT = (
     "tags:: #book\n"
     "isbn:: 9780000000000\n\n"
     "- reading-status:: Reading\n"
-    "  added-to-library:: 2025-12-03\n"
+    "  added-to-library:: [[2025-12-03]]\n"
     "  #Highlighted #Highlights\n"
     "  - tags:: #Quotes, #[[Scientific Papers]]\n"
     "    > First paragraph.  \n"
