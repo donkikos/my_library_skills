@@ -103,7 +103,9 @@ Add deterministic `unittest` coverage for:
 - direct, symlink, and hard-link input/output alias rejection;
 - preserving an existing output when conversion fails.
 
-Convert the three new real exports into `tmp/highlighted/processed`, verify
-their source hashes remain unchanged, and confirm the output counts and
-metadata against the originals. Run both v1 and v2 test modules to guard
-against v1 regressions.
+Convert every v2 export selected by the caller, verify its source hash remains
+unchanged, and confirm output counts and metadata against the original. When a
+title also has a v1 export, compare parsed highlight text, tags, notes, and page
+markers after normalizing only known syntax differences; report genuine source
+content differences rather than forcing equality. Run both v1 and v2 test
+modules to guard against v1 regressions.

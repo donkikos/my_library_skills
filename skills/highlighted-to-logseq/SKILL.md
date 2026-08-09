@@ -1,6 +1,6 @@
 ---
 name: highlighted-to-logseq
-description: Use when converting Markdown exports from the Highlighted app into Logseq book pages, including preserving highlights, source tags, notes, page markers, ISBNs, and authors.
+description: Use when converting old or new Markdown exports from the Highlighted app into Logseq book pages, including highlights, tags, notes, page markers, library metadata, ISBNs, and authors.
 ---
 
 # Highlighted To Logseq
@@ -8,10 +8,14 @@ description: Use when converting Markdown exports from the Highlighted app into 
 Convert one Highlighted Markdown export into one Logseq book page with the
 repository's `[[Template/Book]]` metadata conventions.
 
-## Convert One Export
+## Choose the Converter
 
-Choose explicit input and output paths, then run the bundled standard-library
-Python script:
+Use v1 when the header quotes the title and prefixes the author with `by`:
+
+```md
+# Highlights for ‘Book Title’
+### by Author Name
+```
 
 ```sh
 python3 skills/highlighted-to-logseq/scripts/convert_highlighted.py \
@@ -19,18 +23,25 @@ python3 skills/highlighted-to-logseq/scripts/convert_highlighted.py \
   /path/to/logseq-page.md
 ```
 
-The input must begin with Highlighted's book metadata:
+Use v2 for an unquoted title, a bare author heading, and library metadata:
 
 ```md
-# Highlights for ‘Book Title’
-### by Author Name
+# Highlights for Book Title
+### Author Name
 ISBN: 9780000000000
+Reading status: Reading
+Added to library: 2025-12-03
 ```
 
-The script creates the output parent directory if needed and overwrites only
-the output path provided by the caller. It never modifies the input export and
-rejects input and output paths that identify the same file, including aliases
-through symlinks and hard links.
+```sh
+python3 skills/highlighted-to-logseq/scripts/convert_highlighted_v2.py \
+  /path/to/highlighted-v2-export.md \
+  /path/to/logseq-page.md
+```
+
+Both standalone scripts accept explicit caller-chosen paths, create the output
+parent if needed, never modify the input, and reject direct, symlink, or
+hard-link input/output aliases.
 
 ## Output Format
 
@@ -38,10 +49,11 @@ through symlinks and hard links.
   `book-title::`, linked `book-author::`, `tags:: #book`, and `isbn::`.
   Do not emit Logseq's special `title::` property or a page-level source
   property.
-- Put all imported highlights beneath one `#Highlights #Highlighted` block so
-  those tags describe only the imported subtree. Each highlight becomes one
-  nested Logseq block quote. Prefix every content line with `>`, including
-  blank paragraph lines, and preserve its leading and trailing whitespace.
+- V1 puts imports beneath `#Highlights #Highlighted`. V2 uses
+  `#Highlighted #Highlights` and adds `reading-status::` and
+  `added-to-library::` properties to that block. Each highlight becomes one
+  nested block quote; prefix every content line with `>`, including blank
+  paragraph lines, and preserve its whitespace.
 - Preserve bold that spans quote paragraphs by escaping ordered-list markers
   only when they would otherwise interrupt an open `**` span, and move any
   whitespace immediately before its closing `**` after the delimiter. These
@@ -57,4 +69,5 @@ Run the skill test from the library repository root:
 
 ```sh
 python3 -m unittest tests.test_highlighted_to_logseq -v
+python3 -m unittest tests.test_highlighted_to_logseq_v2 -v
 ```
