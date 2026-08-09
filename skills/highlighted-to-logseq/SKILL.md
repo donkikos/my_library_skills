@@ -50,10 +50,10 @@ hard-link input/output aliases.
   Do not emit Logseq's special `title::` property or a page-level source
   property.
 - V1 puts imports beneath `#Highlights #Highlighted`. V2 puts
-  `reading-status::` and `added-to-library::` first in the import block, then
-  `#Highlighted #Highlights`. Each highlight becomes one nested block quote;
-  prefix every content line with `>`, including blank paragraph lines, and
-  preserve its whitespace.
+  `reading-status::` and `added-to-library:: [[YYYY-MM-DD]]` first in the
+  import block, then `#Highlighted #Highlights`. Each highlight becomes one
+  nested block quote; prefix every content line with `>`, including blank
+  paragraph lines, and preserve its whitespace.
 - For an unambiguous favorite whose one outer `**` pair crosses blank quote
   lines, replace only that pair with one `**` pair per nonblank paragraph.
   Leave single-paragraph, nested, internal, unbalanced, or otherwise ambiguous
