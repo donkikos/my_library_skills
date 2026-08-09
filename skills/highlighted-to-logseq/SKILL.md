@@ -49,15 +49,17 @@ hard-link input/output aliases.
   `book-title::`, linked `book-author::`, `tags:: #book`, and `isbn::`.
   Do not emit Logseq's special `title::` property or a page-level source
   property.
-- V1 puts imports beneath `#Highlights #Highlighted`. V2 uses
-  `#Highlighted #Highlights` and adds `reading-status::` and
-  `added-to-library::` properties to that block. Each highlight becomes one
-  nested block quote; prefix every content line with `>`, including blank
-  paragraph lines, and preserve its whitespace.
-- Preserve bold that spans quote paragraphs by escaping ordered-list markers
-  only when they would otherwise interrupt an open `**` span, and move any
-  whitespace immediately before its closing `**` after the delimiter. These
-  are Markdown-only adjustments; rendered text and whitespace remain intact.
+- V1 puts imports beneath `#Highlights #Highlighted`. V2 puts
+  `reading-status::` and `added-to-library::` first in the import block, then
+  `#Highlighted #Highlights`. Each highlight becomes one nested block quote;
+  prefix every content line with `>`, including blank paragraph lines, and
+  preserve its whitespace.
+- For an unambiguous favorite whose one outer `**` pair crosses blank quote
+  lines, replace only that pair with one `**` pair per nonblank paragraph.
+  Leave single-paragraph, nested, internal, unbalanced, or otherwise ambiguous
+  bold unchanged. Escape ordered-list markers only when they would interrupt an
+  open paragraph-local bold span. These are Markdown-only adjustments; rendered
+  text and whitespace remain intact.
 - Convert source tags into a preceding `tags::` block; make multi-word tags
   page tags such as `#[[Scientific Papers]]`.
 - Keep `Note:` lines and `p. N` markers as nested blocks beneath their
