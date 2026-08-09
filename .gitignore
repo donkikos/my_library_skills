@@ -3,3 +3,6 @@
 .venv/
 .authcode
 audible_data/
+tmp/
+
+__pycache__
